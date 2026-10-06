@@ -8,6 +8,8 @@ files and answers questions about them with a local LLM served by
 when your documents don't cover a question it says so instead of guessing.
 Nothing leaves your computer.
 
+![IndexMind indexing a folder of documents](docs/screenshot.png)
+
 ## Features
 
 - **Local only** — models run in Ollama; the index is a SQLite file.
