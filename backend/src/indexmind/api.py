@@ -1,19 +1,38 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from typing import Literal
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 
 from indexmind import __version__
+from indexmind.answer import Answerer
 from indexmind.indexer import Indexer
-from indexmind.llm import ChatModel, Embedder, OllamaClient
+from indexmind.llm import ChatModel, Embedder, OllamaClient, OllamaError
 from indexmind.retrieval import Retriever
 from indexmind.settings import Settings, get_settings
 from indexmind.store import ChunkStore
+
+
+class Turn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=4000)
+    history: list[Turn] = Field(default_factory=list, max_length=20)
+
+
+def sse(event: str, data: dict) -> str:
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
 @dataclass
@@ -22,6 +41,7 @@ class Services:
     store: ChunkStore
     indexer: Indexer
     retriever: Retriever
+    answerer: Answerer
     chat: ChatModel
     tasks: set[asyncio.Task] = field(default_factory=set)
 
@@ -58,6 +78,7 @@ def build_services(
         store=store,
         indexer=indexer,
         retriever=Retriever(store, embedder),
+        answerer=Answerer(chat or ollama, settings.min_similarity),
         chat=chat or ollama,
     )
 
@@ -103,5 +124,20 @@ def create_app(
         services: Services = request.app.state.services
         services.start_sync()
         return {"started": True}
+
+    @app.post("/ask")
+    async def ask(body: AskRequest, request: Request) -> StreamingResponse:
+        services: Services = request.app.state.services
+        history = [turn.model_dump() for turn in body.history]
+
+        async def events():
+            try:
+                hits = await services.retriever.retrieve(body.question, services.settings.top_k)
+                async for event, data in services.answerer.stream(body.question, hits, history):
+                    yield sse(event, data)
+            except OllamaError as exc:
+                yield sse("error", {"message": str(exc)})
+
+        return StreamingResponse(events(), media_type="text/event-stream")
 
     return app

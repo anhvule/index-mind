@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     chunk_size: int = 1000
     chunk_overlap: int = 150
     top_k: int = 6
+    # Below this cosine similarity a chunk is treated as unrelated to the question.
+    min_similarity: float = 0.3
 
 
 @lru_cache

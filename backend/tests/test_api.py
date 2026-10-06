@@ -45,3 +45,30 @@ def wait_for_idle(client, timeout=5.0):
         if status["state"] != "indexing" or time.monotonic() > deadline:
             return status
         time.sleep(0.02)
+
+
+class EchoChat:
+    async def stream_chat(self, messages):
+        yield "The password is on the fridge [1]."
+
+
+def test_ask_streams_server_sent_events(settings, embedder):
+    app = create_app(settings, embedder=embedder, chat=EchoChat(), index_on_startup=False)
+    with TestClient(app) as client:
+        client.post("/index/rescan")
+        wait_for_idle(client)
+
+        response = client.post("/ask", json={"question": "Where is the wifi password?"})
+
+    assert response.headers["content-type"].startswith("text/event-stream")
+    events = [
+        line.removeprefix("event: ")
+        for line in response.text.splitlines()
+        if line.startswith("event:")
+    ]
+    assert events == ["sources", "token", "done"]
+    assert '"cited": [1]' in response.text
+
+
+def test_ask_rejects_empty_questions(client):
+    assert client.post("/ask", json={"question": ""}).status_code == 422
