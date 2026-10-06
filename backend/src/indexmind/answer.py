@@ -17,6 +17,7 @@ SYSTEM_PROMPT = f"""You answer questions using only the numbered sources provide
 Rules:
 - Use only facts stated in the sources. Do not use outside knowledge.
 - After each sentence that uses a source, cite it with its number in square brackets, e.g. [2].
+- Cite only with brackets. Never write phrases like "according to source 1".
 - If the sources do not contain the answer, reply exactly: "{NOT_FOUND}"
 - Be concise. Prefer short paragraphs or bullet points.
 """
