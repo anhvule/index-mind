@@ -21,7 +21,9 @@ export function Chat({ backendUrl }: { backendUrl: string }) {
   const bottom = useRef<HTMLDivElement>(null)
   const busy = messages.some((m) => m.pending)
 
-  useEffect(() => bottom.current?.scrollIntoView({ block: 'end' }), [messages])
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ block: 'end' })
+  }, [messages])
 
   const update = (id: number, change: (m: Message) => Partial<Message>) =>
     setMessages((all) => all.map((m) => (m.id === id ? { ...m, ...change(m) } : m)))
