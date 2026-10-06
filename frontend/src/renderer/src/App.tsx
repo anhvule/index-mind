@@ -1,8 +1,28 @@
+import { useEffect, useState } from 'react'
+import type { BackendInfo } from '../../shared/bridge'
+import { Chat } from './components/Chat'
+
 export function App() {
+  const [backend, setBackend] = useState<BackendInfo>({ state: 'starting' })
+
+  useEffect(() => {
+    window.indexmind.backend().then(setBackend)
+  }, [])
+
+  if (backend.state === 'starting') {
+    return <div className="empty">Starting IndexMind…</div>
+  }
+  if (backend.state === 'failed') {
+    return (
+      <div className="empty">
+        <h1>IndexMind couldn't start</h1>
+        <pre className="error">{backend.message}</pre>
+      </div>
+    )
+  }
   return (
-    <main className="empty">
-      <h1>IndexMind</h1>
-      <p>Ask questions about your own documents.</p>
-    </main>
+    <div className="layout">
+      <Chat backendUrl={backend.url} />
+    </div>
   )
 }
