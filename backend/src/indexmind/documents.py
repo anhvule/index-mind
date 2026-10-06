@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from pypdf import PdfReader
+import pypdfium2 as pdfium
 
 SUPPORTED_SUFFIXES = frozenset({".pdf", ".md", ".markdown", ".txt"})
 
@@ -41,13 +41,18 @@ def read_sections(path: Path) -> list[Section]:
 
 
 def _read_pdf(path: Path) -> list[Section]:
-    reader = PdfReader(path)
-    sections = []
-    for number, page in enumerate(reader.pages, start=1):
-        text = page.extract_text() or ""
-        if text.strip():
-            sections.append(Section(text=text, page=number))
-    return sections
+    # pdfium keeps words intact where simpler extractors split them at every glyph
+    # run, which badly breaks text with stacked diacritics such as Vietnamese.
+    document = pdfium.PdfDocument(path)
+    try:
+        sections = []
+        for number, page in enumerate(document, start=1):
+            text = page.get_textpage().get_text_range().replace("\r\n", "\n")
+            if text.strip():
+                sections.append(Section(text=text, page=number))
+        return sections
+    finally:
+        document.close()
 
 
 def split_markdown(text: str) -> list[Section]:

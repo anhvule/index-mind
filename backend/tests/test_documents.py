@@ -39,3 +39,15 @@ def test_is_supported_filters_by_suffix_and_hidden_files(tmp_path: Path):
     supported = sorted(p.name for p in tmp_path.iterdir() if is_supported(p))
 
     assert supported == ["a.pdf", "b.MD", "c.txt"]
+
+
+def test_pdf_text_is_read_per_page(tmp_path: Path):
+    import pypdfium2 as pdfium
+
+    path = tmp_path / "doc.pdf"
+    pdf = pdfium.PdfDocument.new()
+    pdf.new_page(200, 200)
+    pdf.save(path)
+
+    # A page without text yields no section rather than an empty one.
+    assert read_sections(path) == []
