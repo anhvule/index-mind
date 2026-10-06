@@ -1,5 +1,17 @@
-import { app, BrowserWindow, shell } from 'electron'
-import { join } from 'node:path'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { mkdirSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { Channels } from '../shared/bridge'
+import { Backend } from './backend'
+
+const docsDir = process.env['INDEXMIND_DOCS_DIR'] ?? join(app.getPath('documents'), 'IndexMind')
+
+const backend = new Backend({
+  // In development the app path is the frontend folder; the backend sits next to it.
+  backendDir: process.env['INDEXMIND_BACKEND_DIR'] ?? resolve(app.getAppPath(), '../backend'),
+  docsDir,
+  dataDir: join(app.getPath('userData'), 'index'),
+})
 
 function createWindow(): BrowserWindow {
   const window = new BrowserWindow({
@@ -32,7 +44,15 @@ function createWindow(): BrowserWindow {
   return window
 }
 
+ipcMain.handle(Channels.backend, () => backend.start())
+ipcMain.handle(Channels.openDocsFolder, async () => {
+  mkdirSync(docsDir, { recursive: true })
+  await shell.openPath(docsDir)
+})
+
 app.whenReady().then(() => {
+  mkdirSync(docsDir, { recursive: true })
+  void backend.start()
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -42,3 +62,5 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
+
+app.on('will-quit', () => backend.stop())

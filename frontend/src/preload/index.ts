@@ -1,5 +1,9 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
+import { Channels, type IndexMindBridge } from '../shared/bridge'
 
-contextBridge.exposeInMainWorld('indexmind', {
-  platform: process.platform,
-})
+const bridge: IndexMindBridge = {
+  backend: () => ipcRenderer.invoke(Channels.backend),
+  openDocsFolder: () => ipcRenderer.invoke(Channels.openDocsFolder),
+}
+
+contextBridge.exposeInMainWorld('indexmind', bridge)
