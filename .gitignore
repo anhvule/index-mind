@@ -1,0 +1,25 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+out/
+dist/
+release/
+*.log
+
+# Local config and data
+.env
+.indexmind/
+documents/*
+!documents/.gitkeep
