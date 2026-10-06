@@ -53,8 +53,10 @@ pnpm install
 pnpm dev
 ```
 
-The app starts the backend for you. Put documents in `~/Documents/IndexMind`
-(the **Open folder** button takes you there) and press **Rescan**.
+The app starts the backend for you. Put documents in the repo's `documents/`
+folder (the **Open folder** button takes you there) and press **Rescan**. Its
+contents are git-ignored. An installed build uses `~/Documents/IndexMind`
+instead, and `INDEXMIND_DOCS_DIR` overrides either.
 
 ### Running the backend on its own
 
