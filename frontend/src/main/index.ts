@@ -4,7 +4,12 @@ import { join, resolve } from 'node:path'
 import { Channels } from '../shared/bridge'
 import { Backend } from './backend'
 
-const docsDir = process.env['INDEXMIND_DOCS_DIR'] ?? join(app.getPath('documents'), 'IndexMind')
+// Running from a checkout, use the repo's documents/ folder; an installed app uses ~/Documents.
+const docsDir =
+  process.env['INDEXMIND_DOCS_DIR'] ??
+  (app.isPackaged
+    ? join(app.getPath('documents'), 'IndexMind')
+    : resolve(app.getAppPath(), '../documents'))
 
 const backend = new Backend({
   // In development the app path is the frontend folder; the backend sits next to it.
