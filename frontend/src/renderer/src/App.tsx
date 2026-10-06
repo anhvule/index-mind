@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { BackendInfo } from '../../shared/bridge'
 import { Chat } from './components/Chat'
+import { Sidebar } from './components/Sidebar'
 
 export function App() {
   const [backend, setBackend] = useState<BackendInfo>({ state: 'starting' })
@@ -22,6 +23,7 @@ export function App() {
   }
   return (
     <div className="layout">
+      <Sidebar backendUrl={backend.url} />
       <Chat backendUrl={backend.url} />
     </div>
   )

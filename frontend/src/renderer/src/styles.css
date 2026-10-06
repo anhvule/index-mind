@@ -186,3 +186,88 @@ button {
   opacity: 0.5;
   cursor: default;
 }
+
+.muted {
+  color: var(--muted);
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  flex-shrink: 0;
+  padding: 20px 16px;
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+  font-size: 0.9em;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.1em;
+  margin-bottom: 20px;
+}
+
+.sidebar h2 {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.sidebar section {
+  margin-bottom: 20px;
+}
+
+.sidebar section p {
+  margin: 0 0 4px;
+}
+
+.sidebar progress {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.failures {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.actions button {
+  flex: 1;
+  padding: 7px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.path {
+  margin: 8px 0 0;
+  font-size: 0.8em;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: left;
+}

@@ -53,3 +53,25 @@ export async function* ask(
     }
   }
 }
+
+export interface IndexStatus {
+  docs_dir: string
+  state: 'idle' | 'indexing' | 'error'
+  files: number
+  chunks: number
+  processed: number
+  pending: number
+  current: string | null
+  failures: Record<string, string>
+  error: string | null
+}
+
+export async function indexStatus(baseUrl: string): Promise<IndexStatus> {
+  const response = await fetch(`${baseUrl}/index/status`)
+  if (!response.ok) throw new Error(`The backend returned ${response.status}.`)
+  return response.json()
+}
+
+export async function rescan(baseUrl: string): Promise<void> {
+  await fetch(`${baseUrl}/index/rescan`, { method: 'POST' })
+}
