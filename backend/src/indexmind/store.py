@@ -24,6 +24,10 @@ CREATE TABLE IF NOT EXISTS chunks (
     embedding BLOB NOT NULL
 );
 CREATE INDEX IF NOT EXISTS chunks_path ON chunks(path);
+CREATE TABLE IF NOT EXISTS meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 
@@ -61,6 +65,21 @@ class ChunkStore:
         self._db.executescript(_SCHEMA)
         self._lock = threading.Lock()
         self._cache: tuple[list[Chunk], np.ndarray] | None = None
+
+    def bind_embedding_model(self, model: str) -> bool:
+        """Record which model produced the stored vectors; clear the index if it changed.
+
+        Vectors from different models are not comparable and usually differ in size,
+        so mixing them would break search. Returns True if the index was cleared.
+        """
+        row = self._db.execute("SELECT value FROM meta WHERE key = 'embed_model'").fetchone()
+        if row is not None and row[0] == model:
+            return False
+        with self._lock, self._db:
+            self._db.execute("DELETE FROM files")
+            self._db.execute("INSERT OR REPLACE INTO meta VALUES ('embed_model', ?)", (model,))
+            self._cache = None
+        return row is not None
 
     def signatures(self) -> dict[str, str]:
         return dict(self._db.execute("SELECT path, signature FROM files"))

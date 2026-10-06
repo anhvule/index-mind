@@ -66,6 +66,7 @@ def build_services(
         ollama = OllamaClient(settings.ollama_url, settings.chat_model, settings.embed_model)
     embedder = embedder or ollama
     store = ChunkStore(settings.data_dir / "index.db")
+    store.bind_embedding_model(settings.embed_model)
     indexer = Indexer(
         settings.docs_dir.expanduser().resolve(),
         store,

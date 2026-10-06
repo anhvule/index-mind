@@ -57,3 +57,22 @@ def test_location_includes_page_and_heading():
     chunk = Chunk("guide.pdf", "text", page=3, heading="Setup")
 
     assert chunk.location == "guide.pdf · p. 3 · Setup"
+
+
+def test_changing_embedding_model_clears_the_index(store: ChunkStore):
+    store.bind_embedding_model("small")
+    store.replace_file("a.md", "v1", [Chunk("a.md", "a")], [[1, 0]])
+
+    cleared = store.bind_embedding_model("large")
+
+    assert cleared
+    assert store.count() == 0
+    assert store.signatures() == {}
+
+
+def test_same_embedding_model_keeps_the_index(store: ChunkStore):
+    store.bind_embedding_model("small")
+    store.replace_file("a.md", "v1", [Chunk("a.md", "a")], [[1, 0]])
+
+    assert not store.bind_embedding_model("small")
+    assert store.count() == 1
